@@ -10,9 +10,10 @@
 <script>
   // ===== ТОЙ ТУРАЛЫ МӘЛІМЕТ: жаңа тойға тек осы бөлікті өзгертіңіз =====
   const TOI = {
-      "groom": "Асқар",
-      "bride": "Айдана",
-      "date": "2026-10-10T18:00:00+05:00",
+      "type": "wedding",
+      "groom": "Бека",
+      "bride": "Аружан",
+      "date": "2026-10-11T19:00:00+05:00",
       "venue": "«Алтын Орда» тойханасы",
       "address": "Алматы қ., Абай даңғылы, 1",
       "map2gis": "https://2gis.kz/almaty",
@@ -160,9 +161,9 @@
 <canvas id="petals" aria-hidden="true"></canvas>
 <main>
   <div class="ornament">🍂 ❦ 🍂</div>
-  <p class="invite">Тойға шақыру</p>
-  <h1><span id="groom"></span><span class="amp">&amp;</span><span id="bride"></span></h1>
-  <p class="text">Құрметті ағайын-туыс, дос-жаран! Сіздерді шаңырағымыздың шаттығына, үйлену тойымыздың қадірлі қонағы болуға шақырамыз.</p>
+  <p class="invite" id="invite">Тойға шақыру</p>
+  <h1><span id="title1"></span><span class="amp" id="title-mid">&amp;</span><span id="title2"></span></h1>
+  <p class="text" id="invite-text"></p>
 
   <section class="reveal">
     <h2>Той салтанаты</h2>
@@ -221,9 +222,34 @@
   const months = ["қаңтар", "ақпан", "наурыз", "сәуір", "мамыр", "маусым",
                   "шілде", "тамыз", "қыркүйек", "қазан", "қараша", "желтоқсан"];
 
-  $("groom").textContent = TOI.groom;
-  $("bride").textContent = TOI.bride;
-  document.title = `${TOI.groom} & ${TOI.bride} — тойға шақыру`;
+  // Ілік септігі: Ержан → Ержанның, Айгүл → Айгүлдің, Болат → Болаттың
+  function genitive(name) {
+    const lower = name.toLowerCase();
+    const last = lower.slice(-1);
+    const vowels = lower.match(/[аәеиоөұүыіэюя]/g) || [];
+    const front = /[әеіөүи]/.test(vowels[vowels.length - 1] || "");
+    let c = "т";
+    if (/[аәеиоөұүыіэюямнң]/.test(last)) c = "н";
+    else if (/[лрйзжу]/.test(last)) c = "д";
+    return name + c + (front ? "ің" : "ың");
+  }
+
+  // Той түрі: үйлену тойы (wedding) немесе мерейтой (jubilee)
+  if (TOI.type === "jubilee") {
+    $("invite").textContent = "Мерейтойға шақыру";
+    $("title1").textContent = TOI.name;
+    $("title-mid").textContent = "·";
+    $("title2").textContent = `${TOI.age} жас`;
+    $("invite-text").textContent = TOI.text ||
+      `Құрметті ағайын-туыс, дос-жаран! Сіздерді ${genitive(TOI.name)} ${TOI.age} жасқа толу мерейтойына арналған салтанатты кешімізге шақырамыз.`;
+    document.title = `${TOI.name} · ${TOI.age} жас — мерейтойға шақыру`;
+  } else {
+    $("title1").textContent = TOI.groom;
+    $("title2").textContent = TOI.bride;
+    $("invite-text").textContent = TOI.text ||
+      "Құрметті ағайын-туыс, дос-жаран! Сіздерді шаңырағымыздың шаттығына, үйлену тойымыздың қадірлі қонағы болуға шақырамыз.";
+    document.title = `${TOI.groom} & ${TOI.bride} — тойға шақыру`;
+  }
   $("date").textContent = `${when.getDate()} ${months[when.getMonth()]} ${when.getFullYear()}`;
   $("time").textContent = `Сағат ${String(when.getHours()).padStart(2, "0")}:${String(when.getMinutes()).padStart(2, "0")}`;
   $("venue").textContent = TOI.venue;
