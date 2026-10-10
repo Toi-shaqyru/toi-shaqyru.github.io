@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тойға шақыру</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  // ===== ТОЙ ТУРАЛЫ МӘЛІМЕТ: жаңа тойға тек осы бөлікті өзгертіңіз =====
+  const TOI = {
+      "type": "jubilee",
+      "name": "Ержан",
+      "age": 50,
+      "date": "2026-10-12T20:00:00+05:00",
+      "venue": "Rixos тойханасы",
+      "address": "Түркістан қ., Б. Саттарханов даңғылы",
+      "map2gis": "https://2gis.kz/turkestan/search/Rixos%20Turkistan",
+      "theme": "autumn",
+      "api": "https://script.google.com/macros/s/AKfycbyam5HoU8mWCQ8yFklaBqZ_KmHW2ZucJYDGd73vDkKnuMr_OsAUrApbHmGjmuBCQVFy5g/exec"
+  };
+  document.documentElement.dataset.theme = TOI.theme;
+</script>
+<style>
+  :root {
+    --bg: #faf6ef;
+    --card: rgba(255, 253, 249, .78);
+    --ink: #3b2f2a;
+    --muted: #8a7a6d;
+    --gold: #b08d57;
+    --gold-soft: #e9dcc5;
+    --shadow: rgba(176, 141, 87, .12);
+    --g1: #f1d9b0; --g2: #f3d3cf; --g3: #efe3c8;
+    --ok: #4f7a52;
+    --err: #a63d32;
+  }
+  /* Күз: жылы қызғылт-сары, терракота, қоңыр */
+  [data-theme="autumn"] {
+    --bg: #f8efe3;
+    --card: rgba(255, 249, 240, .8);
+    --ink: #3d261a;
+    --muted: #8b6a55;
+    --gold: #b8612a;
+    --gold-soft: #ecd2b2;
+    --shadow: rgba(184, 97, 42, .14);
+    --g1: #f2c18d; --g2: #e9a27c; --g3: #f4d9a4;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 16px/1.6 "Montserrat", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  /* Қозғалатын фон: жұмсақ алтын және қызғылт дақтар */
+  .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .glow i {
+    position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%;
+    filter: blur(60px); opacity: .45;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .glow i:nth-child(1) { background: var(--g1); top: -30vmax; left: -25vmax; }
+  .glow i:nth-child(2) { background: var(--g2); bottom: -35vmax; right: -30vmax; animation-duration: 22s; animation-delay: -6s; }
+  .glow i:nth-child(3) { background: var(--g3); top: 30%; left: 40%; width: 45vmax; height: 45vmax; animation-duration: 26s; animation-delay: -12s; }
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(8vmax, 6vmax) scale(1.15); }
+  }
+  #petals { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  main { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 48px 16px 64px; text-align: center; }
+
+  /* Есімдер алтынмен жалтырайды */
+  h1 span:not(.amp) {
+    background: linear-gradient(100deg, var(--ink) 35%, var(--gold) 50%, var(--ink) 65%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shine 5s ease-in-out infinite;
+  }
+  @keyframes shine { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+  .ornament { animation: float 4s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-6px); } }
+
+  /* Бөлімдер біртіндеп пайда болады */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s ease, transform .9s ease; }
+  .reveal.show { opacity: 1; transform: none; }
+  .countdown b.tick { animation: pop .35s ease; }
+  @keyframes pop { 40% { transform: scale(1.18); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow i, h1 span, .ornament { animation: none !important; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    #petals { display: none; }
+  }
+  .ornament { color: var(--gold); letter-spacing: .5em; font-size: 14px; }
+  .invite { color: var(--muted); text-transform: uppercase; letter-spacing: .2em; font-size: 12px; margin: 24px 0 8px; }
+  h1 {
+    font: 600 clamp(44px, 12vw, 64px)/1.05 "Cormorant Garamond", Georgia, serif;
+    margin: 0;
+  }
+  h1 .amp { display: block; font-style: italic; font-weight: 500; color: var(--gold); font-size: .6em; margin: 4px 0; }
+  .text { font: italic 500 20px/1.5 "Cormorant Garamond", Georgia, serif; color: var(--muted); margin: 24px auto 0; max-width: 420px; }
+  section {
+    background: var(--card);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    box-shadow: 0 10px 30px var(--shadow);
+    border: 1px solid var(--gold-soft);
+    border-radius: 16px;
+    padding: 28px 20px;
+    margin-top: 28px;
+  }
+  h2 { font: 600 26px/1.2 "Cormorant Garamond", Georgia, serif; margin: 0 0 16px; }
+  .date { font: 600 30px/1.2 "Cormorant Garamond", Georgia, serif; }
+  .time { color: var(--muted); }
+  .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+  .countdown div { background: var(--bg); border-radius: 12px; padding: 12px 4px; }
+  .countdown b { display: block; font: 600 30px/1 "Cormorant Garamond", Georgia, serif; color: var(--gold); }
+  .countdown span { font-size: 12px; color: var(--muted); }
+  .started { margin-top: 16px; font: italic 500 22px "Cormorant Garamond", Georgia, serif; color: var(--gold); }
+  .venue { font-weight: 500; font-size: 18px; }
+  .address { color: var(--muted); margin: 4px 0 20px; }
+  .btn {
+    display: inline-block; border: 0; cursor: pointer;
+    background: var(--gold); color: #fff;
+    font: 500 15px "Montserrat", sans-serif;
+    padding: 14px 28px; border-radius: 999px; text-decoration: none;
+  }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  form { display: grid; gap: 14px; text-align: left; }
+  label { font-size: 14px; color: var(--muted); display: grid; gap: 6px; }
+  input {
+    font: 400 16px "Montserrat", sans-serif; color: var(--ink);
+    padding: 12px 14px; border: 1px solid var(--gold-soft); border-radius: 10px; background: #fff;
+  }
+  input:focus { outline: 2px solid var(--gold); border-color: transparent; }
+  form .btn { justify-self: center; margin-top: 6px; }
+  .msg { min-height: 24px; text-align: center; font-size: 15px; }
+  .msg.ok { color: var(--ok); }
+  .msg.err { color: var(--err); }
+  footer { margin-top: 40px; font: italic 500 22px "Cormorant Garamond", Georgia, serif; color: var(--gold); }
+
+  /* Той иесіне: құпия сөзбен қонақтар тізімі */
+  .owner-link { margin-top: 32px; background: none; border: 0; color: var(--muted); font: 400 13px "Montserrat", sans-serif; cursor: pointer; text-decoration: underline; }
+  #owner form { grid-template-columns: 1fr auto; align-items: end; }
+  #owner form .btn { margin: 0; padding: 12px 20px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 16px; }
+  .stats div { background: var(--bg); border-radius: 12px; padding: 12px; }
+  .stats b { display: block; font: 600 34px/1 "Cormorant Garamond", Georgia, serif; color: var(--gold); }
+  .stats span { font-size: 12px; color: var(--muted); }
+  .guest { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: center; text-align: left; padding: 10px 0; border-top: 1px solid var(--gold-soft); }
+  .guest .n { color: var(--muted); font-size: 13px; }
+  .guest .name { font-weight: 500; overflow-wrap: anywhere; }
+  .guest .time { color: var(--muted); font-size: 12px; }
+  .guest .count { color: var(--gold); font-weight: 500; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+<canvas id="petals" aria-hidden="true"></canvas>
+<main>
+  <div class="ornament">🍂 ❦ 🍂</div>
+  <p class="invite" id="invite">Тойға шақыру</p>
+  <h1><span id="title1"></span><span class="amp" id="title-mid">&amp;</span><span id="title2"></span></h1>
+  <p class="text" id="invite-text"></p>
+
+  <section class="reveal">
+    <h2>Той салтанаты</h2>
+    <div class="date" id="date"></div>
+    <div class="time" id="time"></div>
+    <div class="countdown" id="countdown">
+      <div><b id="d">0</b><span>күн</span></div>
+      <div><b id="h">0</b><span>сағат</span></div>
+      <div><b id="m">0</b><span>минут</span></div>
+      <div><b id="s">0</b><span>секунд</span></div>
+    </div>
+    <div class="started" id="started" hidden>Той басталды! 🎉</div>
+  </section>
+
+  <section class="reveal">
+    <h2>Мекенжай</h2>
+    <div class="venue" id="venue"></div>
+    <div class="address" id="address"></div>
+    <a class="btn" id="map" target="_blank" rel="noopener">📍 2GIS-те ашу</a>
+  </section>
+
+  <section class="reveal">
+    <h2>Келетініңізді растаңыз</h2>
+    <form id="rsvp">
+      <label>Аты-жөніңіз
+        <input name="name" required maxlength="100" autocomplete="name" placeholder="Мысалы: Ерлан Сапаров">
+      </label>
+      <label>Неше адам келесіздер?
+        <input name="count" type="number" required min="1" max="20" value="1" inputmode="numeric">
+      </label>
+      <button class="btn" type="submit">Жіберу</button>
+      <div class="msg" id="msg" role="status"></div>
+    </form>
+  </section>
+
+  <footer class="reveal">Келіңіздер, күтеміз!</footer>
+
+  <button class="owner-link" id="owner-open" type="button">🔐 Той иесіне</button>
+  <section id="owner" hidden>
+    <h2>Қонақтар тізімі</h2>
+    <form id="owner-form">
+      <label>Құпия сөз
+        <input name="password" type="password" required autocomplete="current-password">
+      </label>
+      <button class="btn" type="submit">Кіру</button>
+    </form>
+    <div class="msg" id="owner-msg" role="status"></div>
+    <div id="owner-list"></div>
+    <button class="btn" id="owner-refresh" type="button" hidden style="margin-top:16px">🔄 Жаңарту</button>
+  </section>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const when = new Date(TOI.date);
+  const months = ["қаңтар", "ақпан", "наурыз", "сәуір", "мамыр", "маусым",
+                  "шілде", "тамыз", "қыркүйек", "қазан", "қараша", "желтоқсан"];
+
+  // Ілік септігі: Ержан → Ержанның, Айгүл → Айгүлдің, Болат → Болаттың
+  function genitive(name) {
+    const lower = name.toLowerCase();
+    const last = lower.slice(-1);
+    const vowels = lower.match(/[аәеиоөұүыіэюя]/g) || [];
+    const front = /[әеіөүи]/.test(vowels[vowels.length - 1] || "");
+    let c = "т";
+    if (/[аәеиоөұүыіэюямнң]/.test(last)) c = "н";
+    else if (/[лрйзжу]/.test(last)) c = "д";
+    return name + c + (front ? "ің" : "ың");
+  }
+
+  // Той түрі: үйлену тойы (wedding) немесе мерейтой (jubilee)
+  if (TOI.type === "jubilee") {
+    $("invite").textContent = "Мерейтойға шақыру";
+    $("title1").textContent = TOI.name;
+    $("title-mid").textContent = "·";
+    $("title2").textContent = `${TOI.age} жас`;
+    $("invite-text").textContent = TOI.text ||
+      `Құрметті ағайын-туыс, дос-жаран! Сіздерді ${genitive(TOI.name)} ${TOI.age} жасқа толу мерейтойына арналған салтанатты кешімізге шақырамыз.`;
+    document.title = `${TOI.name} · ${TOI.age} жас — мерейтойға шақыру`;
+  } else {
+    $("title1").textContent = TOI.groom;
+    $("title2").textContent = TOI.bride;
+    $("invite-text").textContent = TOI.text ||
+      "Құрметті ағайын-туыс, дос-жаран! Сіздерді шаңырағымыздың шаттығына, үйлену тойымыздың қадірлі қонағы болуға шақырамыз.";
+    document.title = `${TOI.groom} & ${TOI.bride} — тойға шақыру`;
+  }
+  $("date").textContent = `${when.getDate()} ${months[when.getMonth()]} ${when.getFullYear()}`;
+  $("time").textContent = `Сағат ${String(when.getHours()).padStart(2, "0")}:${String(when.getMinutes()).padStart(2, "0")}`;
+  $("venue").textContent = TOI.venue;
+  $("address").textContent = TOI.address;
+  $("map").href = TOI.map2gis;
+
+  // Той иесіне: құпия сөз дұрыс болса, қонақтар тізімін көрсетеді
+  $("owner-open").addEventListener("click", () => {
+    $("owner").hidden = false;
+    $("owner").scrollIntoView({ behavior: "smooth" });
+    $("owner-form").password.focus();
+  });
+
+  function showGuests(guests) {
+    const list = $("owner-list");
+    list.replaceChildren();
+    const total = guests.reduce((sum, g) => sum + g.count, 0);
+    const stats = document.createElement("div");
+    stats.className = "stats";
+    stats.innerHTML = `<div><b></b><span>барлық адам</span></div><div><b></b><span>жауап берді</span></div>`;
+    stats.querySelectorAll("b")[0].textContent = total;
+    stats.querySelectorAll("b")[1].textContent = guests.length;
+    list.append(stats);
+    guests.forEach((g, i) => {
+      const row = document.createElement("div");
+      row.className = "guest";
+      row.innerHTML = `<div class="n"></div><div><div class="name"></div><div class="time"></div></div><div class="count"></div>`;
+      row.querySelector(".n").textContent = i + 1;
+      row.querySelector(".name").textContent = g.name;
+      row.querySelector(".time").textContent = g.time;
+      row.querySelector(".count").textContent = `${g.count} адам`;
+      list.append(row);
+    });
+    if (!guests.length) list.append("Әзірге ешкім жазылған жоқ");
+  }
+
+  // Google-дағы қоймаға сұрау жібереді.
+  // GitHub-тағы сайт: TOI.api арқылы. Google-дың өз ішінде: google.script.run арқылы.
+  function callServer(action, data) {
+    if (TOI.api) {
+      return fetch(TOI.api, {
+        method: "POST",
+        body: JSON.stringify({ action, ...data }), // text/plain: Google-ға қосымша тексеріссіз жетеді
+      })
+        .then((r) => r.json())
+        .then((res) => (res.ok ? res : Promise.reject(new Error(res.error))));
+    }
+    if (window.google && google.script && google.script.run) {
+      return new Promise((resolve, reject) => {
+        const run = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+        if (action === "save") run.saveGuest(data.name, data.count);
+        else run.getGuests(data.password);
+      }).then((value) => (action === "guests" ? { guests: value } : { ok: true }));
+    }
+    return Promise.reject(new Error("Сайт әлі Google-ға қосылмаған"));
+  }
+
+  let ownerPassword = null;
+
+  function loadGuests(password, onError) {
+    callServer("guests", { password })
+      .then(({ guests }) => {
+        ownerPassword = password;
+        $("owner-form").hidden = true;
+        $("owner-refresh").hidden = false;
+        $("owner-msg").textContent = "";
+        showGuests(guests);
+      })
+      .catch(onError);
+  }
+
+  $("owner-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const msg = $("owner-msg");
+    const button = e.target.querySelector("button");
+    button.disabled = true;
+    msg.className = "msg";
+    msg.textContent = "Тексерілуде...";
+    loadGuests(e.target.password.value, () => {
+      button.disabled = false;
+      msg.className = "msg err";
+      msg.textContent = "Құпия сөз қате";
+    });
+  });
+
+  function refreshGuests() {
+    if (!ownerPassword) return;
+    $("owner-msg").className = "msg";
+    $("owner-msg").textContent = "Жаңартылуда...";
+    loadGuests(ownerPassword, () => { $("owner-msg").textContent = "Жаңарту мүмкін болмады"; });
+  }
+  $("owner-refresh").addEventListener("click", refreshGuests);
+  setInterval(() => { if (ownerPassword && !document.hidden) refreshGuests(); }, 30000);
+
+  function setNum(id, value) {
+    const el = $(id);
+    if (el.textContent === String(value)) return;
+    el.textContent = value;
+    el.classList.remove("tick");
+    void el.offsetWidth; // анимацияны қайта бастау үшін
+    el.classList.add("tick");
+  }
+
+  function tick() {
+    const left = when - Date.now();
+    if (left <= 0) {
+      $("countdown").hidden = true;
+      $("started").hidden = false;
+      return;
+    }
+    setNum("d", Math.floor(left / 864e5));
+    setNum("h", Math.floor(left / 36e5) % 24);
+    setNum("m", Math.floor(left / 6e4) % 60);
+    setNum("s", Math.floor(left / 1e3) % 60);
+  }
+
+  // Бөлімдер экранға кіргенде біртіндеп пайда болады
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("show"); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+  // Түсіп тұрған жапырақтар мен жыпылықтаған ұшқындар
+  (function petals() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const canvas = $("petals");
+    const ctx = canvas.getContext("2d");
+    const autumn = TOI.theme === "autumn";
+    const colors = autumn
+      ? ["#c8553d", "#e07a2f", "#d9a441", "#a0522d", "#e39b3d"]
+      : ["#d9b77e", "#e8c9a0", "#f0c8c0", "#c9a46a"];
+    const sparkleColor = autumn ? "#d08a3a" : "#c9a46a";
+
+    // Күзгі жапырақ: ұшы сүйір, ортасында тамыры бар
+    function leaf(r, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(0, -r);
+      ctx.bezierCurveTo(r * 0.9, -r * 0.5, r * 0.7, r * 0.5, 0, r);
+      ctx.bezierCurveTo(-r * 0.7, r * 0.5, -r * 0.9, -r * 0.5, 0, -r);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(90, 40, 15, .35)";
+      ctx.lineWidth = Math.max(1, r * 0.08);
+      ctx.beginPath();
+      ctx.moveTo(0, -r * 0.8);
+      ctx.lineTo(0, r * 1.25);
+      ctx.stroke();
+    }
+    let w, h, dpr, items = [];
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.width = innerWidth * dpr;
+      h = canvas.height = innerHeight * dpr;
+      canvas.style.width = innerWidth + "px";
+      canvas.style.height = innerHeight + "px";
+      const count = Math.round(Math.min(innerWidth, 900) / 14);
+      items = Array.from({ length: count }, (_, i) => make(i % 3 === 0));
+    }
+
+    function make(sparkle, top) {
+      return {
+        sparkle,
+        x: Math.random() * w,
+        y: top ? -20 * dpr : Math.random() * h,
+        r: (sparkle ? 1 + Math.random() * 1.5 : autumn ? 6 + Math.random() * 6 : 4 + Math.random() * 5) * dpr,
+        vy: (sparkle ? 0.1 + Math.random() * 0.2 : 0.4 + Math.random() * 0.6) * dpr,
+        swing: Math.random() * Math.PI * 2,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * (autumn ? 0.05 : 0.02),
+        color: colors[Math.floor(Math.random() * colors.length)],
+        phase: Math.random() * Math.PI * 2,
+      };
+    }
+
+    function frame(t) {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < items.length; i++) {
+        const p = items[i];
+        p.y += p.vy;
+        p.swing += 0.01;
+        p.rot += p.vr;
+        const x = p.x + Math.sin(p.swing) * 20 * dpr;
+        if (p.sparkle) {
+          ctx.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(t / 700 + p.phase));
+          ctx.fillStyle = sparkleColor;
+          ctx.beginPath();
+          ctx.arc(x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.globalAlpha = autumn ? 0.75 : 0.55;
+          ctx.save();
+          ctx.translate(x, p.y);
+          ctx.rotate(p.rot);
+          if (autumn) {
+            leaf(p.r, p.color);
+          } else {
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.r, p.r * 0.55, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+        if (p.y > h + 20 * dpr) items[i] = make(p.sparkle, true);
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(frame);
+    }
+
+    addEventListener("resize", resize);
+    resize();
+    requestAnimationFrame(frame);
+  })();
+  tick();
+  setInterval(tick, 1000);
+
+  $("rsvp").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const button = form.querySelector("button");
+    const msg = $("msg");
+    const name = form.name.value.trim();
+    const count = parseInt(form.count.value, 10);
+
+    if (!name) { msg.className = "msg err"; msg.textContent = "Аты-жөніңізді жазыңыз"; return; }
+    if (!(count >= 1 && count <= 20)) { msg.className = "msg err"; msg.textContent = "Адам саны 1-ден 20-ға дейін болуы керек"; return; }
+
+    button.disabled = true;
+    msg.className = "msg";
+    msg.textContent = "Жіберілуде...";
+    callServer("save", { name, count })
+      .then(() => {
+        form.reset();
+        msg.className = "msg ok";
+        msg.textContent = `Рақмет, ${name}! Сізді тойда күтеміз 🤍`;
+      })
+      .catch(() => {
+        msg.className = "msg err";
+        msg.textContent = "Жіберілмеді. Интернетті тексеріп, қайталап көріңіз.";
+      })
+      .finally(() => { button.disabled = false; });
+  });
+</script>
+</body>
+</html>
